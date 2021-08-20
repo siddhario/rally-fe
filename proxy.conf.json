@@ -1,0 +1,10 @@
+{
+  "/race": {
+    "target": "https://localhost:5001/",
+    "secure": false
+  },
+  "/Vehicle": {
+    "target": "https://localhost:5001/",
+    "secure": false
+  }
+}

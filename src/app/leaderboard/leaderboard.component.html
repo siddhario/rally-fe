@@ -1,0 +1,312 @@
+<div class="container">
+    <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
+                    Races
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+
+
+                    <div class="row g-3">
+                        <table *ngIf="races$" class="table table-hover table-sm" style="font-size: 14px;">
+                            <thead>
+                                <th>Id</th>
+                                <th>Year</th>
+                                <th>Date created</th>
+                                <th>Date started</th>
+                                <th>Length</th>
+                                <th>Speed</th>
+                                <th>Status</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngFor="let item of races$|async">
+                                    <tr (click)="select(item.id)" [ngClass]="item.id==raceId?'table-success':''">
+                                        <td>{{item.id}}</td>
+                                        <td>{{item.year}}</td>
+                                        <td>{{item.createdTime|date:'medium'}}</td>
+                                        <td>{{item.startTime|date:'medium'}}</td>
+                                        <td>{{item.length}}</td>
+                                        <td>{{item.gameSpeed}}</td>
+                                        <td>{{item.status}}</td>
+                                        <td><button style="width: 80px;" type="button"
+                                                class="btn btn-primary btn-sm"
+                                                (click)="edit(item)">Edit</button></td>
+                                        
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-1">
+                            <input type="text" [(ngModel)]="year" class="form-control  form-control-sm"
+                                placeholder="Year" aria-label="Year">
+                        </div>
+                        <div class="col-sm-1">
+                            <input type="text" [(ngModel)]="length" class="form-control  form-control-sm"
+                                placeholder="Length" aria-label="Length">
+                        </div>
+                        <div class="col-sm-1">
+                            <input type="text" [(ngModel)]="gameSpeed" class="form-control  form-control-sm"
+                                placeholder="Speed" aria-label="Speed">
+                        </div>
+
+                        <div class="col-sm-9">
+                            <button *ngIf="!editRace" type="button" class="btn btn-primary btn-sm" 
+                                (click)="createGame()">Create
+                                race</button>
+                            <button *ngIf="editRace" type="button" class="btn btn-primary btn-sm" 
+                                (click)="updateGame()">Update
+                                race</button>
+                            <button *ngIf="editRace" type="button" class="btn btn-warning btn-sm" 
+                                (click)="cancelUpdateGame()">Cancel</button>
+
+                                <button  type="button" class="btn btn-danger btn-sm"
+                                (click)="clear()">Clear data</button>
+                        </div>
+                        
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Leaderboard
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <Div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-2">
+                                <select class="form-select form-select-sm" name="types" id="types"
+                                    [(ngModel)]="vehicleType" (change)="load()">
+                                    <option value="-1">--All vehicle types--</option>
+                                    <option value="1">Cars</option>
+                                    <option value="2">--Sport Cars</option>
+                                    <option value="3">--Terrain Cars</option>
+                                    <option value="4">Trucks</option>
+                                    <option value="5">Motorcycles</option>
+                                    <option value="6">--Cross Motorcycles</option>
+                                    <option value="7">--Sport Motorcycles</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-1" *ngIf="raceId">
+                                <select class="form-select form-select-sm" name="types" id="types"
+                                    [(ngModel)]="vehiclesPerType">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-1" *ngIf="raceId">
+                                <button style="width: 80px;" type="button" class="btn btn-outline-primary btn-sm"
+                                    (click)="initData()">Init
+                                    data</button>
+                            </div>
+
+                            <div class="col-sm-1" *ngIf="raceId"> <button style="width: 80px;" type="button"
+                                    class="btn btn-outline-danger btn-sm" (click)="stop()">Reset</button></div>
+                            <div class="col-sm-1" *ngIf="raceId"> <button style="width: 80px;" type="button"
+                                    class="btn btn-outline-success btn-sm" (click)="start()">Start</button></div>
+
+                            <div class="form-check col-sm-2">
+                                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"
+                                    [(ngModel)]="percentage">
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    Show progress
+                                </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <button type="button"
+                                    [ngClass]="getStatusClass((this.raceStatistics$|async)?.raceStatus)">
+                                    Race status: {{(this.raceStatistics$|async)?.raceStatus}} </button>
+                                <button *ngIf="(this.raceStatistics$|async)?.raceStatus!='PENDING'" type="button"
+                                    [ngClass]="getStatusClass((this.raceStatistics$|async)?.raceStatus)">{{formatTime((this.raceStatistics$|async)?.raceTime)}}</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3" *ngIf="(leaderboard$|async)?.length>0" >
+                            <table class="table table-hover table-sm" style="font-size: 12px;">
+                                <thead>
+                                    <tr>
+                                        <th>Position</th>
+                                        <th>Team Name<br />
+                                        <th>Model</th>
+                                        <th>Type</th>
+                                        <th>Running time
+                                        <th>Distance</th>
+                                        <th>Status</th>
+                                        <!--    <th>HMTFS</th>
+                                <th>LMTFS</th> -->
+
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngFor="let item of leaderboard$|async">
+                                        <tr [ngClass]="getClass(item.status)">
+                                            <!-- <td><a style="color: aliceblue;" [routerLink]="" (click)="remove(item.vehicleId)">Remove</a>
+                                    </td> -->
+                                            <td>{{item.position}}</td>
+                                            <td>{{item.teamName}}
+                                            <td>{{item.model}}</td>
+                                            <td>{{item.vehicleType}}</td>
+                                            <td>{{formatTime(item.elapsedTime)}}
+                                            <td>{{round(item.distance,2)}}m</td>
+                                            <td style="width: 10%;">{{item.status}}
+
+                                                <!--    <td>{{formatTime(item.mfts)}}</td>
+                                    <td>{{formatTime(item.lmfts)}}</td> -->
+
+
+                                        </tr>
+                                        <tr class="table" *ngIf="percentage">
+                                            <td colspan="5" style="padding:0px;">
+                                                <progress-bar [progress]="item.percentage">
+                                                </progress-bar>
+                                            </td>
+                                            <td>
+                                                {{formatTime(item.repairmentTime)}}
+                                                <Strong>{{formatTime(item.finishTime)}}</Strong>
+                                            </td>
+                                            <td><button style="padding-top: 0px;padding-bottom: 0px;" type="button" class="btn btn-sm btn-outline-danger" (click)="remove(item.vehicleId)">Remove</button></td>
+
+                                        </tr>
+                                        <tr></tr>
+                                    </ng-container>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row g-3" s>
+                            <div class="col-sm-12" style="display: flex;padding-top: 15px;">
+                                <button type="button" class="btn btn-secondary btn-sm" style="width: 140px;">
+                                    PENDING <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleStatus.pending}}</span>
+                                </button>
+
+                                <button type="button" class="btn btn-primary btn-sm" style="width: 140px;">
+                                    RACING <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleStatus.racing}}</span>
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm" style="width: 140px;">
+                                    REPAIRING <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleStatus.repairing}}</span>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" style="width: 140px;">
+                                    MALFUNCTION <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleStatus.malfunction}}</span>
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm" style="width: 140px;">
+                                    FINISHED <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleStatus.finished}}</span>
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <div class="row g-3" style="padding-top: 20px;">
+                            <div class="col-sm-12" style="display: flex;">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" style="width: 140px;">
+                                    SPORT CARS <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleTypes.sportCars}}</span>
+                                </button>
+
+                                <button type="button" class="btn btn-outline-primary btn-sm" style="width: 140px;">
+                                    TERRAIN CARS <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleTypes.terrainCars}}</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" style="width: 140px;">
+                                    TRUCKS <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleTypes.trucks}}</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" style="width: 140px;">
+                                    SPORT MOTOS <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleTypes.sportMotos}}</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" style="width: 140px;">
+                                    CROSS MOTOS <span class="badge bg-secondary">{{(raceStatistics$|async)?.vehicleTypes.crossMotos}}</span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </Div>
+
+
+
+
+
+                </div>
+
+            </div>
+
+
+
+            <!--  <label for="year">Year:</label>
+        <input type="text" [(ngModel)]="year" />
+        <label for="length">Length:</label>
+        <input type="text" [(ngModel)]="length" />
+        <label for="length">Game speed:</label>
+        <input type="gameSpeed" [(ngModel)]="gameSpeed" /> -->
+
+
+
+
+
+
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    Vehicles
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
+                data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+
+                    <div class="row g-3">
+                        <div class="col-sm-2">
+                            <input type="text" [(ngModel)]="teamName" class="form-control  form-control-sm"
+                                placeholder="Team" aria-label="Team" />
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="text" [(ngModel)]="model" class="form-control  form-control-sm"
+                                placeholder="Model" aria-label="Model" />
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="date" [(ngModel)]="manufacturingDate" class="form-control  form-control-sm"
+                                placeholder="Manufacturing date" aria-label="Manufacturing date" />
+                        </div>
+
+                        <div class="col-sm-3">
+                            <select class="form-select form-select-sm" name="newVehicleTypes" id="newVehicleTypes"
+                                [(ngModel)]="newVehicleType">
+                                <option selected value="2">Sport Cars</option>
+                                <option value="3">Terrain Cars</option>
+                                <option value="4">Trucks</option>
+                                <option value="6">Cross Motorcycles</option>
+                                <option value="7">Sport Motorcycles</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="button" class="btn btn-outline-primary btn-sm" (click)="addVehicle()">Add
+                                vehicle</button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
